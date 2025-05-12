@@ -2,73 +2,84 @@
 
 A simple Bash utility to back up your Meshtastic device configuration as YAML files. The script invokes the Meshtastic CLI to export your device config, names the backup by device owner and date, and stores it under a `meshtastic-backups` directory in your current working directory.
 
-## Repository
-
-  https://github.com/bodhar/meshtastic-backups.git
-
 ## Requirements
 
 - A Unix-compatible shell (bash)
 - [Meshtastic CLI](https://github.com/meshtastic/Meshtastic-python) installed and in your `PATH`
 - `git` (for cloning the repository)
+- Python 3 (recommended 3.11 or newer)
+- [uv](https://docs.astral.sh/uv/) (a fast Python package installer and resolver) or a Python virtual environment manager
+
+*I've only tested this on MacOS Sequoia and Ubuntu 24.04, however this should work with other Linux distributions, including via the use of WSL.*
 
 ## Installation
 
-1. Clone the repository  
-   ```bash
+1. Clone the repository
+   
+   ```shell
    git clone https://github.com/bodhar/meshtastic-backups.git
    cd meshtastic-backups
    ```
-2. Install the Meshtastic CLI  
-   Choose the method appropriate for your OS:
+2. Install Meshtastic CLI
 
-   macOS  
-   ```bash
-   brew install meshtastic
-   ```
+I use `uv` for managing python virtual environments, however `venv` will also work fine here.
 
-   Ubuntu  
-   ```bash
-   sudo apt update
-   sudo apt install python3-pip
-   pip3 install meshtastic
-   ```
+**Using `uv`**
 
-   Windows (PowerShell)  
-   ```powershell
-   pip install meshtastic
-   ```
+Assuming that `uv` is already installed, you can use the project in this repository to setup the environment:
 
-3. Verify installation  
-   ```bash
-   meshtastic --version
-   ```
+```shell
+uv sync
+```
+
+**Using `venv`**
+
+Assuming that `venv` is already installed:
+
+```shell
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install "meshtastic[cli]"
+```
+
+3. Verify installation
+
+If working, the below command will output the installed version of Meshtastic CLI:
+
+```shell
+source .venv/bin/activate
+meshtastic --version
+```
 
 ## Usage
 
-Run the backup script to export your Meshtastic device configuration:
+1. Activate the virtual environment:
 
-```bash
+```shell
+source .venv/bin/activate
+```
+
+You'll then be able to run the backup script to export your Meshtastic device configuration:
+
+```shell
 ./scripts/backup-config-serial.sh
 ```
 
 The script will:
 
-1. Check that `meshtastic` is available in your `PATH`.
-2. Export the device configuration to a temporary file.
-3. Read the `owner:` field from the config for naming.
-4. Move the YAML file into `./meshtastic-backups/` with a filename of the form:
-   ```
-   config-<owner>-YYYY-MM-DD.yaml
-   ```
-5. Print the path of the saved backup.
+1. Check that `meshtastic` is in `PATH`
+2. Export the device configuration to a temporary file
+3. Read the `owner` field from the config
+4. Move the temporary file contents into `./meshtastic-backups/` with a filename in the form of `config-<owner>-YYYY-MM-DD.yaml`
+6. Print the path of the saved backup
 
-If no `owner:` field is found, the script aborts to allow you to inspect the raw export.
+If no `owner` field is found, the script aborts, allowing you to inspect the raw export.
+
+**Note** that any previous backups taken on the same date will currently be overwritten if you run the script multiple times. I should probably add the current time to the file as well to limit any loss.
 
 ### Environment Variables & Flags
 
-- No command-line flags are supported.
-- The backup directory defaults to `$(pwd)/meshtastic-backups`. You may change the script if a different location is required.
+Nothing currently supported.
 
 ## License
 
