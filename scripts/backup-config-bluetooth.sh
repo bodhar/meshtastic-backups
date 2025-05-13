@@ -9,9 +9,19 @@
 # to complete.
 # See README.md for installation instructions.
 
-if ! command -v meshtastic &> /dev/null; then
-    echo "Meshtastic CLI cannot be found, see README for instructions."
-    exit 1
+# Usage: ./backup-config-ip.sh [backup_name]
+# Example: ./backup-config-ip.sh my_backup
+# The backup name is optional; if not provided, it will be derived from the device name in the configuration.
+
+# Check if the Meshtastic CLI is installed/sourced
+if ! command -v meshtastic &>/dev/null; then
+  echo "Meshtastic CLI cannot be found, see README for instructions."
+  exit 1
+fi
+
+# Check if an argument (backup name) was provided
+if [ -n "$1" ]; then
+  backup_name="$1"
 fi
 
 temp_file=$(mktemp)
@@ -30,9 +40,12 @@ if ble_name=$(meshtastic --ble-scan | awk -F"'" '{print $2}'); then
             rm "$temp_file"
             exit 1
         fi
-        # Set the backup file name to include date and owner name
-        d=$(date +%Y-%m-%d)
-        backup_file="$backup_directory/config-$device_name-$d.yaml"
+        if [ -z "$backup_name" ]; then
+            backup_name="$device_name"
+        fi
+        # Set the backup file name to include date and owner or backup name
+        d=$(date +%Y-%m-%d-%H-%M)
+        backup_file="$backup_directory/config-$backup_name-$d.yaml"
         mv "$temp_file" "$backup_file"
         echo "Backup successful -> $backup_file"
     else
